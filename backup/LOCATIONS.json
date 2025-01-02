@@ -1,0 +1,24 @@
+[
+    {
+        "COUNTRY_ID": "IT",
+        "CITY": "Roma",
+        "POSTAL_CODE": "00989",
+        "LOCATION_ID": 1000,
+        "STREET_ADDRESS": "1297 Via Cola di Rie"
+    },
+    {
+        "COUNTRY_ID": "CN",
+        "CITY": "Beijing",
+        "POSTAL_CODE": "190518",
+        "LOCATION_ID": 2000,
+        "STREET_ADDRESS": "40-5-12 Laogianggen"
+    },
+    {
+        "COUNTRY_ID": "CH",
+        "CITY": "Bern",
+        "POSTAL_CODE": "3095",
+        "STATE_PROVINCE": "BE",
+        "LOCATION_ID": 3000,
+        "STREET_ADDRESS": "Murtenstrasse 921"
+    }
+]
