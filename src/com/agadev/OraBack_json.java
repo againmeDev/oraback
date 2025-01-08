@@ -3,22 +3,25 @@ package com.agadev;
 import java.io.*;
 import java.sql.*;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.Properties;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
-public class OraBack {
+public class OraBack_json {
     public static void main(String[] args) {
 
-        String env = args[0].toString();
-
-        // 실행 환경 (local, dev, prod)을 전달받음
+		String env = args[0].toString();
+		
+		// 실행 환경 (local, dev, prod)을 전달받음
         String environment = System.getProperty(env, "local"); // 기본값: local
         String configFileName = "config_" + environment + ".properties";
         String logFileName = "oraback_" + environment + ".log";
-
+        
         LogUtil.log(logFileName, configFileName);
 
         Properties config = new Properties();
-
+        
         // 환경 파일 읽기
         try (InputStream input = new FileInputStream(configFileName)) {
             config.load(input);
@@ -33,7 +36,7 @@ public class OraBack {
         String username = config.getProperty("jdbc.username");
         String password = config.getProperty("jdbc.password");
         String outputDir = config.getProperty("output.dir");
-
+        	
         try {
             // 백업 디렉토리 생성
             File dir = new File(outputDir);
@@ -47,6 +50,7 @@ public class OraBack {
 
             // 테이블 목록 가져오기
             Statement stmt = conn.createStatement();
+//            ResultSet tables = stmt.executeQuery("SELECT table_name FROM user_tables");
             ResultSet tables = stmt.executeQuery("SELECT table_name FROM all_tables");
 
             while (tables.next()) {
@@ -57,9 +61,8 @@ public class OraBack {
                     // 테이블 데이터 가져오기
                     Statement dataStmt = conn.createStatement();
                     ResultSet data = dataStmt.executeQuery("SELECT * FROM " + tableName);
-
-                    // 데이터를 저장할 리스트 생성
-                    List<Map<String, Object>> tableData = new ArrayList<>();
+                    // JSON 배열 생성
+                    JSONArray jsonArray = new JSONArray();
 
                     // 컬럼 메타데이터 가져오기
                     ResultSetMetaData metaData = data.getMetaData();
@@ -67,22 +70,19 @@ public class OraBack {
 
                     // 데이터 행 처리
                     while (data.next()) {
-                        Map<String, Object> row = new HashMap<>();
+                        JSONObject row = new JSONObject();
                         for (int i = 1; i <= columnCount; i++) {
                             String columnName = metaData.getColumnName(i);
                             Object value = data.getObject(i);
                             row.put(columnName, value);
                         }
-                        tableData.add(row);
+                        jsonArray.put(row);
                     }
 
-                    // 리스트를 파일로 저장
-                    File outputFile = new File(outputDir, tableName + ".txt");
+                    // JSON 파일로 저장
+                    File outputFile = new File(outputDir, tableName + ".json");
                     try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile))) {
-                        for (Map<String, Object> row : tableData) {
-                            writer.write(row.toString());
-                            writer.newLine();
-                        }
+                        writer.write(jsonArray.toString(4)); // 4는 JSON 들여쓰기용
                     }
 
                     dataStmt.close();
@@ -103,4 +103,5 @@ public class OraBack {
             e.printStackTrace();
         }
     }
+
 }
